@@ -1,0 +1,17 @@
+// Cloudflare Workers con static assets: cada push a main publica site/.
+// Este fichero manda sobre el panel: el dominio y la 404 se definen aquí
+// (un dominio añadido solo en el panel lo borraría el siguiente despliegue).
+{
+  "name": "cv",
+  "compatibility_date": "2026-10-12",
+  "assets": {
+    "directory": "./site",
+    "not_found_handling": "404-page"
+  },
+  "routes": [
+    { "pattern": "cv.turolol.win", "custom_domain": true }
+  ],
+  // workers.dev se queda de respaldo hasta que cv.turolol.win tenga certificado
+  "workers_dev": true,
+  "preview_urls": false
+}

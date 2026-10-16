@@ -21,7 +21,7 @@ Pantallas que encajan al hacer scroll o deslizar en el móvil, y dos demos inter
 ## Estructura
 
 ```
-site/            la web tal cual se publica (salida de Cloudflare Pages, sin build)
+site/            la web tal cual se publica (lo sirve Cloudflare Workers tal cual, sin build)
   index.html     español
   en/index.html  inglés (mismos id de sección: el selector de idioma te deja donde estabas)
   _headers       cabeceras de seguridad
@@ -37,7 +37,7 @@ python3 -m http.server -d site 8000   # http://localhost:8000
 python3 tools/check.py                # antes de cada push
 ```
 
-Cada push a `main` lo publica Cloudflare Pages. El `Expires` de `security.txt` caduca el 15-oct-2027: renovarlo antes (el CI falla si caduca o pasa de un año).
+Cada push a `main` lo publica Cloudflare Workers (static assets, ver [`wrangler.jsonc`](wrangler.jsonc)). El `Expires` de `security.txt` caduca el 15-oct-2027: renovarlo antes (el CI falla si caduca o pasa de un año).
 
 ## Licencia
 

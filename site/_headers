@@ -1,4 +1,4 @@
-# Cabeceras de seguridad (Cloudflare Pages). La web no carga nada de terceros ni tiene
+# Cabeceras de seguridad (Cloudflare Workers static assets). La web no carga nada de terceros ni tiene
 # código en línea, así que la CSP puede ser la más estricta posible.
 /*
   Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests; require-trusted-types-for 'script'; trusted-types 'none'
