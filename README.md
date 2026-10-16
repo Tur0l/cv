@@ -11,7 +11,7 @@ Pantallas que encajan al hacer scroll o deslizar en el móvil, y dos demos inter
 
 ## Cómo está hecha
 
-- **HTML, CSS y JavaScript a mano**, sin frameworks ni dependencias. Las fuentes (IBM Plex) van alojadas aquí.
+- **Hecha con Claude (Claude Code)**: HTML, CSS y JavaScript sin frameworks ni dependencias. Las fuentes (IBM Plex) van alojadas aquí.
 - **Nada en línea**: ni `<script>` ni `<style>` ni `style=`. Por eso la CSP puede ser `default-src 'none'` con todo en `'self'`, más **Trusted Types** obligatorios (el JS no usa `innerHTML` ni similares).
 - **Cabeceras** en [`site/_headers`](site/_headers): CSP, HSTS, `nosniff`, `frame-ancestors 'none'`, Permissions-Policy cerrada, COOP/CORP.
 - **Sin cookies, sin rastreadores, sin peticiones a terceros.** La foto va sin metadatos y el email se monta con JavaScript para que no lo recojan los bots.
