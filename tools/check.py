@@ -51,7 +51,7 @@ class Page(HTMLParser):
 def local_target(page: Path, ref: str):
     if re.match(r"^(https?:|mailto:|#|data:)", ref) or ref == "":
         return None
-    ref = ref.split("#")[0]
+    ref = ref.split("#")[0].split("?")[0]
     target = (SITE / ref.lstrip("/")) if ref.startswith("/") else (page.parent / ref)
     if ref.endswith("/") or target.is_dir():
         target = target / "index.html"

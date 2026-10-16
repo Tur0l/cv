@@ -15,7 +15,19 @@
   ! Cross-Origin-Resource-Policy
   Cross-Origin-Resource-Policy: cross-origin
 
-/assets/*
+# CSS y JS se revalidan en cada visita (ETag: si no cambiaron, 304 sin descarga):
+# con caché larga y el mismo nombre, el navegador mezclaba HTML nuevo con CSS/JS viejos.
+/assets/css/*
+  Cache-Control: no-cache
+
+/assets/js/*
+  Cache-Control: no-cache
+
+# Las fuentes no cambian nunca; las imágenes, rara vez
+/assets/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/img/*
   Cache-Control: public, max-age=86400
 
 /.well-known/security.txt
