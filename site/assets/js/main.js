@@ -1,4 +1,4 @@
-/* CV de Alberto Morales: progreso, raíl, apariciones al hacer scroll y las dos demos.
+/* CV de Alberto Morales: baraja de diapositivas, órdenes de terminal, raíl, apariciones y las dos demos.
    Sin dependencias y sin innerHTML: todo el DOM se toca con textContent y nodos. */
 (() => {
   'use strict';
@@ -59,65 +59,174 @@
     },
   }[LANG];
 
-  /* Línea de progreso */
-  const bar = document.querySelector('.progress span');
-  let ticking = false;
-  const paintProgress = () => {
-    ticking = false;
-    const max = root.scrollHeight - window.innerHeight;
-    const p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
-    if (bar) bar.style.transform = `scaleX(${p.toFixed(4)})`;
-  };
-  const onScroll = () => {
-    if (!ticking) { ticking = true; requestAnimationFrame(paintProgress); }
-  };
-  window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', onScroll);
-  paintProgress();
+  /* Baraja: cada diapositiva sube y tapa a la anterior (sticky), que se encoge y se
+     apaga. Unos marcadores en el flujo normal dan la posición real de cada una, porque
+     la de una diapositiva pegada ya no sirve para saber dónde empieza. */
+  const motion = !reduce.matches;
+  const deck = motion && window.CSS?.supports?.('position', 'sticky');
+  if (deck) root.classList.add('deck');
+  if (motion) root.classList.add('anim');
+  const marks = sections.map((s) => {
+    const m = document.createElement('div');
+    m.className = 'slide-mark';
+    m.setAttribute('aria-hidden', 'true');
+    s.before(m);
+    return m;
+  });
+  const wraps = sections.map((s) => s.querySelector(':scope > .wrap'));
 
-  /* Raíl de secciones + aviso de "has llegado a esta diapositiva" */
+  /* Órdenes de terminal y apariciones. Una diapositiva "entra" justo antes de verse:
+     escribe su orden y después aparece su contenido. Si al subir queda otra vez por
+     debajo de la pantalla, "sale" y todo vuelve a empezar la próxima vez. */
+  const cmds = sections.map((s) => s.querySelector('.cmd'));
+  const typingMs = cmds.map((c) => {
+    if (!c) return 0;
+    const n = c.querySelector('.cmd-text').textContent.length;
+    c.style.setProperty('--n', String(n));
+    return n * 38 + 160;
+  });
+  const reveals = sections.map((s) => Array.from(s.querySelectorAll('.reveal')));
+  const sectionOf = new Map();
+  reveals.forEach((list, i) => list.forEach((el) => sectionOf.set(el, i)));
+  const shown = sections.map(() => false);
+  const typedUntil = sections.map(() => 0);
+  const atRest = new WeakSet(); // lo que ya se veía al cargar no se anima
+
+  const enter = (i) => {
+    shown[i] = true;
+    if (!cmds[i]) return;
+    cmds[i].classList.add('on');
+    typedUntil[i] = performance.now() + (motion ? typingMs[i] : 0);
+  };
+  const leave = (i) => {
+    shown[i] = false;
+    if (cmds[i]) cmds[i].classList.remove('on');
+    reveals[i].forEach((el) => { el.classList.remove('is-in'); atRest.delete(el); });
+  };
+
+  const bar = document.querySelector('.progress span');
   const railLinks = new Map();
   document.querySelectorAll('.rail a').forEach((a) => railLinks.set(a.hash.slice(1), a));
   let currentId = 'inicio';
+  let active = -1;
+  const covers = [];
+
+  // Solo cuando cambia el tamaño de una diapositiva (no con la barra del navegador
+  // del móvil): la posición de pegado va en CSS con 100svh, que no se mueve.
+  const layout = () => {
+    if (!deck) return;
+    const vh = window.innerHeight;
+    sections.forEach((s, i) => {
+      const h = s.offsetHeight;
+      s.style.setProperty('--h', `${h}px`);
+      const w = wraps[i];
+      if (!w) return;
+      // Encoger hacia el centro de lo que se ve cuando está pegada, no hacia su principio
+      const cy = Math.max(vh / 2, h - vh / 2);
+      w.style.transformOrigin = `50% ${Math.round(cy - w.offsetTop)}px`;
+    });
+  };
+
+  let ticking = false;
+  const frame = () => {
+    ticking = false;
+    const vh = window.innerHeight;
+    const max = root.scrollHeight - vh;
+    if (bar) bar.style.transform = `scaleX(${(max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0).toFixed(4)})`;
+    const tops = marks.map((m) => m.getBoundingClientRect().top);
+
+    let now = 0;
+    tops.forEach((t, i) => { if (t <= vh * 0.5) now = i; });
+    if (now !== active) {
+      active = now;
+      currentId = sections[now].id;
+      railLinks.forEach((a, id) => {
+        if (id === currentId) a.setAttribute('aria-current', 'true');
+        else a.removeAttribute('aria-current');
+      });
+      sections[now].dispatchEvent(new CustomEvent('slide:enter'));
+    }
+
+    tops.forEach((t, i) => {
+      if (!shown[i] && t < vh * 1.12) enter(i);
+      else if (shown[i] && t > vh * 1.2) leave(i);
+    });
+
+    if (deck) {
+      wraps.forEach((w, i) => {
+        if (!w) return;
+        const next = tops[i + 1];
+        const p = next === undefined ? 0 : Math.min(1, Math.max(0, (vh - next) / vh));
+        const v = Math.round(p * 500) / 500;
+        if (v === covers[i]) return;
+        covers[i] = v;
+        // Directo en el elemento: una variable CSS heredada recalcularía toda la sección
+        w.style.transform = v ? `scale(${(1 - v * 0.05).toFixed(4)})` : '';
+        w.style.opacity = v ? (1 - v * 0.6).toFixed(3) : '';
+      });
+    }
+  };
+  const onScroll = () => {
+    if (!ticking) { ticking = true; requestAnimationFrame(frame); }
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  window.addEventListener('load', () => { layout(); onScroll(); });
+  if (deck && 'ResizeObserver' in window) {
+    const ro = new ResizeObserver(() => { layout(); onScroll(); });
+    sections.forEach((s) => ro.observe(s));
+  }
+  layout();
+  frame();
+
+  // Los enlaces internos van al marcador: una diapositiva pegada "ya está arriba"
+  // para el navegador y el salto no haría nada
+  document.addEventListener('click', (ev) => {
+    const a = ev.target.closest('a[href^="#"]');
+    if (!a) return;
+    const i = sections.findIndex((s) => s.id === a.hash.slice(1));
+    if (i < 0) return;
+    ev.preventDefault();
+    window.scrollTo({ top: window.scrollY + marks[i].getBoundingClientRect().top, behavior: motion ? 'smooth' : 'auto' });
+    sections[i].setAttribute('tabindex', '-1');
+    sections[i].focus({ preventScroll: true });
+    history.replaceState(null, '', `#${sections[i].id}`);
+  });
+
   // Al cambiar de idioma se sigue en la misma diapositiva (los id son iguales en las dos)
   document.querySelectorAll('.lang a:not([aria-current])').forEach((a) => {
     a.addEventListener('click', () => { a.hash = currentId === 'inicio' ? '' : currentId; });
   });
-  if (hasIO) {
-    const current = new IntersectionObserver((entries) => {
-      entries.forEach((e) => {
-        if (!e.isIntersecting) return;
-        currentId = e.target.id;
-        railLinks.forEach((a, id) => {
-          if (id === e.target.id) a.setAttribute('aria-current', 'true');
-          else a.removeAttribute('aria-current');
-        });
-        e.target.dispatchEvent(new CustomEvent('slide:enter'));
-      });
-    }, { rootMargin: '-45% 0px -50% 0px' });
-    sections.forEach((s) => current.observe(s));
-  }
 
-  /* Apariciones: arrancan justo antes de entrar en pantalla. Lo que ya se ve al
-     cargar no se anima, así la página está completa desde el primer momento. */
-  if (hasIO && !reduce.matches) {
-    sections.forEach((s) => {
-      s.querySelectorAll('.reveal').forEach((el, i) => el.style.setProperty('--d', `${Math.min(i, 6) * 70}ms`));
-    });
-    const seen = new WeakSet();
-    const reveal = new IntersectionObserver((entries, obs) => {
+  /* Apariciones: cada bloque aparece al acercarse a la pantalla, esperando a que su
+     diapositiva termine de escribir la orden. Se siguen observando siempre para poder
+     repetirse cuando la diapositiva "sale" (ver leave). */
+  if (hasIO && motion) {
+    const known = new WeakSet();
+    const io = new IntersectionObserver((entries) => {
+      const t0 = performance.now();
+      const batch = [];
       entries.forEach((e) => {
-        if (!seen.has(e.target)) {
-          seen.add(e.target);
-          if (e.isIntersecting) { obs.unobserve(e.target); return; }
+        const el = e.target;
+        if (!known.has(el)) {
+          known.add(el);
+          if (e.isIntersecting) { atRest.add(el); return; }
         }
-        if (e.isIntersecting) {
-          e.target.classList.add('is-in');
-          obs.unobserve(e.target);
-        }
+        if (e.isIntersecting && !atRest.has(el) && !el.classList.contains('is-in')) batch.push(el);
+      });
+      batch.sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1));
+      const perSection = new Map();
+      batch.forEach((el) => {
+        const i = sectionOf.get(el);
+        if (!shown[i]) enter(i);
+        const k = perSection.get(i) || 0;
+        perSection.set(i, k + 1);
+        const delay = Math.max(0, typedUntil[i] - t0) + Math.min(k, 6) * 70;
+        el.style.setProperty('--d', `${Math.round(delay)}ms`);
+        el.classList.add('is-in');
       });
     }, { rootMargin: '12% 0px 12% 0px' });
-    document.querySelectorAll('.reveal').forEach((el) => reveal.observe(el));
+    reveals.flat().forEach((el) => io.observe(el));
   }
 
   /* Tarjetas deslizables del homelab: puntos de posición */
@@ -125,13 +234,13 @@
     const dots = track.nextElementSibling;
     if (!hasIO || !dots || !dots.classList.contains('cards-dots')) return;
     const cards = Array.from(track.children);
-    const marks = cards.map(() => dots.appendChild(document.createElement('span')));
-    marks[0].classList.add('on');
+    const pips = cards.map(() => dots.appendChild(document.createElement('span')));
+    pips[0].classList.add('on');
     const io = new IntersectionObserver((entries) => {
       entries.forEach((e) => {
         if (!e.isIntersecting) return;
         const i = cards.indexOf(e.target);
-        marks.forEach((m, j) => m.classList.toggle('on', i === j));
+        pips.forEach((m, j) => m.classList.toggle('on', i === j));
       });
     }, { root: track, threshold: 0.6 });
     cards.forEach((c) => io.observe(c));
