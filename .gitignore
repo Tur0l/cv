@@ -1,0 +1,5 @@
+.venv/
+_dl/
+__pycache__/
+tools/build-preview.py
+*.bak-*
