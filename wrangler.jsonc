@@ -1,6 +1,7 @@
 // Cloudflare Workers con static assets: cada push a main publica site/.
-// Este fichero manda sobre el panel: el dominio y la 404 se definen aquí
-// (un dominio añadido solo en el panel lo borraría el siguiente despliegue).
+// El dominio y la 404 se definen aquí. Ojo: quitar un dominio de este fichero
+// NO lo borra en Cloudflare (sin "routes" el deploy no toca los existentes);
+// para quitarlo de verdad, también en el panel (Worker cv → Domains & Routes).
 {
   "name": "cv",
   "compatibility_date": "2026-10-12",
@@ -11,7 +12,7 @@
   "routes": [
     { "pattern": "cv.turolol.win", "custom_domain": true }
   ],
-  // workers.dev se queda de respaldo hasta que cv.turolol.win tenga certificado
-  "workers_dev": true,
+  // Solo cv.turolol.win: sin copia duplicada en *.workers.dev
+  "workers_dev": false,
   "preview_urls": false
 }
