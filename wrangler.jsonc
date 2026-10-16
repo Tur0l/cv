@@ -8,6 +8,9 @@
     "directory": "./site",
     "not_found_handling": "404-page"
   },
+  "routes": [
+    { "pattern": "cv.turolol.win", "custom_domain": true }
+  ],
   // workers.dev se queda de respaldo hasta que cv.turolol.win tenga certificado
   "workers_dev": true,
   "preview_urls": false
