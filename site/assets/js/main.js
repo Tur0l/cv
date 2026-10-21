@@ -34,6 +34,12 @@
         run: 'Simular caída de pve-nodo1', again: 'Volver a empezar',
       },
       copy: 'Copiar', copied: 'Copiado', selected: 'Seleccionado',
+      hello: (mail) => [
+        '>_ ¿Curioseando el código? Buena señal.',
+        'Esta web no carga nada de terceros ni usa cookies, y su CSP es default-src \'none\' con Trusted Types.',
+        `Si buscas a alguien a quien le guste mirar debajo del capó: ${mail}`,
+        '¿Has encontrado un fallo? /.well-known/security.txt · Código: https://github.com/Tur0l/cv',
+      ],
     },
     en: {
       verdict: { checking: 'checking', pass: 'passes', block: 'blocked', owned: 'compromised', unreached: '' },
@@ -56,6 +62,12 @@
         run: 'Simulate a pve-nodo1 failure', again: 'Start over',
       },
       copy: 'Copy', copied: 'Copied', selected: 'Selected',
+      hello: (mail) => [
+        '>_ Poking around the source? Good sign.',
+        'This site loads nothing from third parties, sets no cookies, and its CSP is default-src \'none\' with Trusted Types.',
+        `If you’re looking for someone who likes to look under the hood: ${mail}`,
+        'Found a bug? /.well-known/security.txt · Code: https://github.com/Tur0l/cv',
+      ],
     },
   }[LANG];
 
@@ -419,4 +431,11 @@
       }
     });
   });
+
+  /* Guiño para quien abre la consola. El email sale del mismo data-email: tampoco queda entero aquí */
+  const mailBox = document.querySelector('[data-email]');
+  if (mailBox) {
+    const [title, ...lines] = T.hello(`${mailBox.dataset.u}@${mailBox.dataset.d}`);
+    console.log(`%c${title}%c\n${lines.join('\n')}`, 'font: 600 15px monospace; color: #1a9bb0', 'font: 12px monospace');
+  }
 })();
