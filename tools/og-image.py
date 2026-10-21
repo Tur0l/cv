@@ -13,15 +13,25 @@ d = ImageDraw.Draw(img)
 sans = lambda w, s: ImageFont.truetype(str(fonts / f"ibm-plex-sans-latin-{w}-normal.woff2"), s)
 mono = lambda w, s: ImageFont.truetype(str(fonts / f"ibm-plex-mono-latin-{w}-normal.woff2"), s)
 
-# Foto en círculo a la derecha
-size = 330
-photo = Image.open(base / "assets/img/alberto-480.webp").convert("RGB").resize((size, size), Image.LANCZOS)
-mask = Image.new("L", (size * 4, size * 4), 0)
-ImageDraw.Draw(mask).ellipse((0, 0, size * 4 - 1, size * 4 - 1), fill=255)
-mask = mask.resize((size, size), Image.LANCZOS)
-px, py = W - size - 90, (H - size) // 2
-d.ellipse((px - 8, py - 8, px + size + 8, py + size + 8), outline=ACC, width=3)
-img.paste(photo, (px, py), mask)
+# El logo ">_" del favicon a la derecha (sin foto, por privacidad). Se dibuja a 4x y se reduce
+# para que los bordes salgan suaves.
+size, k = 300, 4
+px, py = W - size - 100, (H - size) // 2
+logo = Image.new("RGBA", (size * k, size * k), (0, 0, 0, 0))
+ld = ImageDraw.Draw(logo)
+u = size * k / 32                       # unidades del viewBox 32x32 del favicon
+ld.rounded_rectangle((0, 0, size * k - 1, size * k - 1), radius=7 * u, fill=(14, 107, 125))
+def stroke(points):
+    pts = [(a * u, b * u) for a, b in points]
+    ld.line(pts, fill="white", width=round(3 * u), joint="curve")
+    for x0, y0 in pts:                  # extremos redondeados, como stroke-linecap="round"
+        r = 1.5 * u
+        ld.ellipse((x0 - r, y0 - r, x0 + r, y0 + r), fill="white")
+stroke([(8, 10.5), (14, 16), (8, 21.5)])
+stroke([(16.5, 22), (24, 22)])
+logo = logo.resize((size, size), Image.LANCZOS)
+d.rounded_rectangle((px - 10, py - 10, px + size + 10, py + size + 10), radius=7 * size / 32 + 10, outline=ACC, width=3)
+img.paste(logo, (px, py), logo)
 
 x = 84
 d.text((x, 118), "CURRICULUM VITAE · 2026", font=mono(600, 22), fill=ACC)

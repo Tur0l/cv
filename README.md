@@ -14,7 +14,7 @@ Pantallas que encajan al hacer scroll o deslizar en el móvil, y dos demos inter
 - **Hecha con Claude (Claude Code)**: HTML, CSS y JavaScript sin frameworks ni dependencias. Las fuentes (IBM Plex) van alojadas aquí.
 - **Nada en línea**: ni `<script>` ni `<style>` ni `style=`. Por eso la CSP puede ser `default-src 'none'` con todo en `'self'`, más **Trusted Types** obligatorios (el JS no usa `innerHTML` ni similares).
 - **Cabeceras** en [`site/_headers`](site/_headers): CSP, HSTS, `nosniff`, `frame-ancestors 'none'`, Permissions-Policy cerrada, COOP/CORP.
-- **Sin cookies, sin rastreadores, sin peticiones a terceros.** La foto va sin metadatos y el email se monta con JavaScript para que no lo recojan los bots.
+- **Sin cookies, sin rastreadores, sin peticiones a terceros.** El email se monta con JavaScript para que no lo recojan los bots.
 - **Accesible**: funciona sin JavaScript, respeta `prefers-reduced-motion`, se maneja con teclado y tiene modo oscuro automático.
 - [`/.well-known/security.txt`](site/.well-known/security.txt) según RFC 9116.
 
@@ -41,4 +41,4 @@ Cada push a `main` lo publica Cloudflare Workers (static assets, ver [`wrangler.
 
 ## Licencia
 
-El código es MIT ([LICENSE](LICENSE)). El contenido del CV y la foto son míos y no se pueden reutilizar. Las fuentes IBM Plex van bajo [SIL OFL 1.1](site/assets/fonts/OFL.txt).
+El código es MIT ([LICENSE](LICENSE)). El contenido del CV es mío y no se puede reutilizar. Las fuentes IBM Plex van bajo [SIL OFL 1.1](site/assets/fonts/OFL.txt).

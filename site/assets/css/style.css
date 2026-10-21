@@ -212,13 +212,8 @@ h2 { font-size: var(--fs-h2); letter-spacing: -.018em; max-width: 24ch; }
 .hero-grid {
   display: grid;
   gap: clamp(1.25rem, 3vw, 2rem) clamp(2rem, 5vw, 4.5rem);
-  grid-template-areas: "photo" "text" "term";
+  grid-template-areas: "text" "term";
   align-items: center;
-}
-.photo {
-  grid-area: photo;
-  width: 104px; height: 104px; border-radius: 50%; object-fit: cover;
-  box-shadow: 0 0 0 1px var(--line), 0 0 0 6px var(--paper), 0 0 0 7px var(--line);
 }
 .hero-text { grid-area: text; display: flex; flex-direction: column; gap: .85rem; min-width: 0; }
 .eyebrow { font-family: var(--f-mono); font-size: var(--fs-label); letter-spacing: .22em; text-transform: uppercase; color: var(--accent); }
@@ -258,12 +253,8 @@ h1 { font-size: var(--fs-display); letter-spacing: -.028em; line-height: 1.02; }
 @media (min-width: 960px) {
   .hero-grid {
     grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
-    grid-template-areas: "text photo" "text term";
-    align-items: end;
+    grid-template-areas: "text term";
   }
-  .hero-text { align-self: center; }
-  .photo { width: 200px; height: 200px; justify-self: center; }
-  .term { align-self: start; }
 }
 
 /* Perfil */
@@ -501,7 +492,6 @@ h1 { font-size: var(--fs-display); letter-spacing: -.028em; line-height: 1.02; }
 
 /* Movimiento: solo si la persona no lo ha desactivado */
 @keyframes rise { from { opacity: 0; transform: translateY(16px); } }
-@keyframes appear { from { opacity: 0; transform: scale(.92); } }
 @keyframes type { from { width: 0; } to { width: 24ch; } }
 @keyframes show { from { visibility: hidden; } to { visibility: visible; } }
 @keyframes blink { 50% { opacity: 0; } }
@@ -512,7 +502,6 @@ h1 { font-size: var(--fs-display); letter-spacing: -.028em; line-height: 1.02; }
   .hero-text > :nth-child(3) { animation-delay: .14s; }
   .hero-text > :nth-child(4) { animation-delay: .2s; }
   .hero-text > :nth-child(5) { animation-delay: .26s; }
-  .photo { animation: appear .9s var(--ease) .1s both; }
   .term { animation: rise .8s var(--ease) .3s both; }
   .typed { animation: type .8s steps(24, end) .75s both; }
   .term-unit, .term dl div, .term-last { animation: show 0s 1.6s both; }
